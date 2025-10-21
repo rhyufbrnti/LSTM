@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediksi Konsumsi Energi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #4173af 0%, #34508c 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #397eba 0%, #d2afd0 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #86a6b9;
+            font-size: 1.1em;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(29, 89, 142, 0.1);
+        }
+
+        .input-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4d89bd;
+        }
+
+        .input-info p {
+            margin: 0;
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #134067 0%, #255aa4 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 92, 158, 0.3);
+        }
+
+        .btn-secondary {
+            background: #bf8cbd;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #2871a9;
+            transform: translateY(-2px);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .prediction-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 15px 0;
+            text-align: center;
+            color: #4facfe;
+        }
+
+        .chart-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ Prediksi Konsumsi Energi</h1>
+            <p>Memprediksi konsumsi energi masa depan menggunakan Jaringan Syaraf LSTM</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-info">
+                <p><strong>Instructions:</strong> Masukkan tepat 100 nilai konsumsi energi yang dipisahkan koma. Contoh: 1.2, 1.5, 1.3, 1.4, ...</p>
+            </div>
+            
+            <form id="predictionForm">
+                <div class="form-group">
+                    <label for="energy_data">Data Konsumsi Energi (100 nilai):</label>
+                    <textarea 
+                        id="energy_data" 
+                        name="energy_data" 
+                        placeholder="Enter 100 energy consumption values separated by commas..."
+                        required></textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button type="submit" class="btn-primary">🔮 Predict</button>
+                    <button type="button" class="btn-secondary" onclick="resetForm()">🔄 Reset</button>
+                </div>
+            </form>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Memproses prediksi...</p>
+            </div>
+            
+            <div class="result" id="result"></div>
+            
+            <div class="chart-container" id="chartContainer">
+                <h3>Visualisasi Data</h3>
+                <canvas id="dataChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Tugas Akhir 04 (TA-04): Prediksi Data Sekuensial Menggunakan LSTM</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const chartContainer = document.getElementById('chartContainer');
+            
+            // Show loading
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            chartContainer.style.display = 'none';
+            
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                
+                if (data.success) {
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <h3>✅ Prediction Successful!</h3>
+                        <div class="prediction-value">${data.prediction.toFixed(4)}</div>
+                        <p><strong>Message:</strong> ${data.message}</p>
+                    `;
+                    
+                    // Show chart
+                    chartContainer.style.display = 'block';
+                    drawChart(data.input_values, data.prediction);
+                } else {
+                    result.className = 'result error';
+                    result.innerHTML = `
+                        <h3>❌ Error</h3>
+                        <p>${data.error}</p>
+                    `;
+                }
+                
+                result.style.display = 'block';
+            })
+            .catch(error => {
+                loading.style.display = 'none';
+                result.className = 'result error';
+                result.innerHTML = `
+                    <h3>❌ Error</h3>
+                    <p>Network error: ${error.message}</p>
+                `;
+                result.style.display = 'block';
+            });
+        });
+        
+        function resetForm() {
+            document.getElementById('predictionForm').reset();
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('chartContainer').style.display = 'none';
+        }
+        
+        function drawChart(inputValues, prediction) {
+            const canvas = document.getElementById('dataChart');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Set up chart dimensions
+            const padding = 40;
+            const chartWidth = width - 2 * padding;
+            const chartHeight = height - 2 * padding;
+            
+            // Find min and max values
+            const allValues = [...inputValues, prediction];
+            const minVal = Math.min(...allValues);
+            const maxVal = Math.max(...allValues);
+            const range = maxVal - minVal;
+            
+            // Draw axes
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.stroke();
+            
+            // Draw input data line
+            ctx.strokeStyle = '#4facfe';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            for (let i = 0; i < inputValues.length; i++) {
+                const x = padding + (i / (inputValues.length - 1)) * chartWidth;
+                const y = height - padding - ((inputValues[i] - minVal) / range) * chartHeight;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+            
+            // Draw prediction point
+            ctx.fillStyle = '#ff6b6b';
+            ctx.beginPath();
+            const predX = width - padding;
+            const predY = height - padding - ((prediction - minVal) / range) * chartHeight;
+            ctx.arc(predX, predY, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Add labels
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Input Data', width / 2, height - 10);
+            
+            ctx.textAlign = 'right';
+            ctx.fillText('Prediction', predX + 20, predY + 5);
+            
+            // Y-axis labels
+            ctx.textAlign = 'right';
+            ctx.fillText(maxVal.toFixed(2), padding - 10, padding + 5);
+            ctx.fillText(minVal.toFixed(2), padding - 10, height - padding + 5);
+        }
+    </script>
+</body>
+</html>
